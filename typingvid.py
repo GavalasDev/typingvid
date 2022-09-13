@@ -26,7 +26,7 @@ def remap_special(c):
     if c in m:
         c = m[c]
     else:
-        c = c.upper()
+        c = c
     return c
 
 def create_frames(keyboard_svg, text):
@@ -59,7 +59,7 @@ def generate_keyboard_clip(temp_dir, T):
     return keyboard_clip
 
 def generate_text_clip(text, T, font):
-    return mp.concatenate_videoclips([mp.TextClip('> {}|'.format(text[:i].upper()),color='black',
+    return mp.concatenate_videoclips([mp.TextClip('> {}|'.format(text[:i]),color='black',
         kerning = 5, fontsize=31, font=font).set_duration(2*T) for i in range(0, len(text)+1)])
     
 def generate_composite_clip(background_clip, keyboard_clip, txt_clips):
@@ -80,7 +80,7 @@ def export_clip(clip, filename):
         clip.write_videofile(filename, fps=24, logger=None)
 
 
-def create_video(temp_dir, filename, text, speed, layout, no_display=False, invert_colors=False):
+def create_video(temp_dir, filename, text, speed, layout, no_display=False, invert_colors=False, force_lowercase=False):
 
     T = 1/speed
 
@@ -90,14 +90,16 @@ def create_video(temp_dir, filename, text, speed, layout, no_display=False, inve
         final_clip = keyboard_clip
     elif len(layout['fonts']) == 2:
         background_clip = mp.ImageClip("assets/dual_display_background.png")
-        upperTxtClip = generate_text_clip(text, T, layout['fonts'][0])
+        upperTxtClip = generate_text_clip(text if not force_lowercase else text.lower(), T, layout['fonts'][0])
 
-        lowerTxtClip = generate_text_clip(layout_remap(text, layout['mapping']), T, layout['fonts'][1])
+        remapped_text = layout_remap(text, layout['mapping'])
+
+        lowerTxtClip = generate_text_clip(remapped_text if not force_lowercase else remapped_text.lower(), T, layout['fonts'][1])
 
         final_clip = generate_composite_clip(background_clip, keyboard_clip, [upperTxtClip, lowerTxtClip])
     elif len(layout['fonts']) == 1:
         background_clip = mp.ImageClip("assets/mono_display_background.png")
-        txt_clip = generate_text_clip(text, T, layout['fonts'][0])
+        txt_clip = generate_text_clip(text if not force_lowercase else text.lower(), T, layout['fonts'][0])
         final_clip = generate_composite_clip(background_clip, keyboard_clip, [txt_clip])
 
     if invert_colors:
@@ -115,6 +117,7 @@ parser.add_argument('-t', '--text', required=True)
 parser.add_argument('-o', '--output', default='output.mp4')
 parser.add_argument('-s', '--speed', default=5, type=int)
 parser.add_argument('--invert-colors', action='store_true')
+parser.add_argument('--force-lowercase', action='store_true')
 
 args = parser.parse_args()
 args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
@@ -126,5 +129,5 @@ print("Generating frames... ", end="", flush=True)
 frames_dir = create_frames("assets/{}".format(layout['file']), args.text)
 print("frames successfully generated.")
 print("Generating output file... ", end="", flush=True)
-create_video(frames_dir, args.output, args.text, args.speed, layout, args.no_display, args.invert_colors)
+create_video(frames_dir, args.output, args.text, args.speed, layout, args.no_display, args.invert_colors, args.force_lowercase)
 print("output file {} successfully generated.".format(args.output))
