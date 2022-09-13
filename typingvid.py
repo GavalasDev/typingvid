@@ -50,42 +50,65 @@ def create_frames(keyboard_svg, text):
         frame_num += 1
     return temp_dir
 
-def create_video(temp_dir, filename, text1, text2):
-    background_clip = mp.ImageClip("keyboard_video_background.png")
 
-    T = 0.2
-
+def generate_keyboard_clip(temp_dir, T):
     clips = [mp.ImageClip("{}/frame{}.png".format(temp_dir.name, n)).set_duration(T) for n in range(len(os.listdir(temp_dir.name)))]
     keyboard_clip = mp.concatenate_videoclips(clips)
+    return keyboard_clip
 
-    upperTxtClip = mp.concatenate_videoclips([mp.TextClip('> {}|'.format(text1[:i].upper()),color='black',
-                   kerning = 5, fontsize=31, font='Noto-Sans-Mono').set_duration(2*T) for i in range(0, len(text1)+1)])
+def generate_text_clip(text, T, font):
+    return mp.concatenate_videoclips([mp.TextClip('> {}|'.format(text[:i].upper()),color='black',
+        kerning = 5, fontsize=31, font=font).set_duration(2*T) for i in range(0, len(text)+1)])
+    
+def generate_composite_clip(background_clip, keyboard_clip, txt_clips):
+    if len(txt_clips) == 2:
+        cvc = mp.CompositeVideoClip( [background_clip, keyboard_clip.resize(0.69).set_pos(("center",0.4), relative=True) , txt_clips[0].set_pos((351, 230)), txt_clips[1].set_pos((351, 335))]).set_duration(keyboard_clip.duration)
 
-    lowerTxtClip = mp.concatenate_videoclips([mp.TextClip('> {}|'.format(text2[:i].upper()),color='black',
-                   kerning = 5, fontsize=31, font='Noto-Sans-Mono-CJK-JP').set_duration(2*T) for i in range(0, len(text2)+1)])
+        cvc = crop(cvc, x1=247.72, y1=132.38, width=1424.56, height=815.24)
+    elif len(txt_clips) == 1:
+        cvc = mp.CompositeVideoClip([background_clip, keyboard_clip.resize(0.69).set_pos(("center", 380)), txt_clips[0].set_pos((351, 282))]).set_duration(keyboard_clip.duration)
+        cvc = crop(cvc, x1=269.5, y1=199.5, width=1381, height=681)
+        return cvc
 
-    cvc = mp.CompositeVideoClip( [background_clip, keyboard_clip.resize(0.69).set_pos(("center",0.4), relative=True) , upperTxtClip.set_pos((351, 230)), lowerTxtClip.set_pos((351, 335))]).set_duration(keyboard_clip.duration)
-
-    cvc = crop(cvc, x1=247.72, y1=132.38, width=1424.56, height=815.24)
-
+def export_clip(clip, filename):
     ext = filename.split(".")[1]
-
     if ext == 'gif':
-        cvc.write_gif(filename, fps=10)
+        clip.write_gif(filename, fps=10)
     elif ext == 'mp4':
-        cvc.write_videofile(filename, fps=24)
+        clip.write_videofile(filename, fps=24)
+
+
+def create_video(temp_dir, filename, text, speed, layout, no_display=False):
+
+    T = 1/speed
+
+    keyboard_clip = generate_keyboard_clip(temp_dir, T)
+
+    if no_display:
+        final_clip = keyboard_clip
+    elif len(layout['fonts']) == 2:
+        background_clip = mp.ImageClip("assets/dual_display_background.png")
+        upperTxtClip = generate_text_clip(text, T, layout['fonts'][0])
+
+        lowerTxtClip = generate_text_clip(layout_remap(text, layout['mapping']), T, layout['fonts'][1])
+
+        final_clip = generate_composite_clip(background_clip, keyboard_clip, [upperTxtClip, lowerTxtClip])
+    elif len(layout['fonts']) == 1:
+        background_clip = mp.ImageClip("assets/mono_display_background.png")
+        txt_clip = generate_text_clip(text, T, layout['fonts'][0])
+        final_clip = generate_composite_clip(background_clip, keyboard_clip, [txt_clip])
+
+    export_clip(final_clip, filename)
 
     temp_dir.cleanup()
 
 
-
 parser = argparse.ArgumentParser(description="A customizable typing animation generator with multi-layout support.")
-parser.add_argument('-l', '--layout', default='enjp', help='the layout to use for the keyboard (default: enjp)')
-parser.add_argument('-d', '--display', default='dual', choices=['single', 'dual', 'none'])
+parser.add_argument('-l', '--layout', default='engr', help='the layout to use for the keyboard (default: engr)')
+parser.add_argument('--no-display', action='store_true')
 parser.add_argument('-t', '--text', required=True)
 parser.add_argument('-o', '--output', default='output.mp4')
 parser.add_argument('-s', '--speed', default=5, type=int)
-
 
 args = parser.parse_args()
 args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
@@ -94,6 +117,6 @@ with open("layouts/{}.yml".format(args.layout)) as f:
     layout = yaml.safe_load(f)
 
 print("Generating frames ...")
-frames_dir = create_frames(layout['file'], args.text)
+frames_dir = create_frames("assets/{}".format(layout['file']), args.text)
 print("Frames successfully generated.")
-create_video(frames_dir, args.output, args.text, layout_remap(args.text, layout['mapping']))
+create_video(frames_dir, args.output, args.text, args.speed, layout, args.no_display)
