@@ -7,7 +7,7 @@ import os
 from cairosvg import svg2png
 import moviepy.editor as mp
 from moviepy.video.tools.segmenting import findObjects
-from moviepy.video.fx.all import crop
+import moviepy.video.fx.all as vfx
 
 def layout_remap(word, mapping):
     res = ""
@@ -64,11 +64,11 @@ def generate_composite_clip(background_clip, keyboard_clip, txt_clips):
     if len(txt_clips) == 2:
         cvc = mp.CompositeVideoClip( [background_clip, keyboard_clip.resize(0.69).set_pos(("center",0.4), relative=True) , txt_clips[0].set_pos((351, 230)), txt_clips[1].set_pos((351, 335))]).set_duration(keyboard_clip.duration)
 
-        cvc = crop(cvc, x1=247.72, y1=132.38, width=1424.56, height=815.24)
+        cvc = vfx.crop(cvc, x1=247.72, y1=132.38, width=1424.56, height=815.24)
     elif len(txt_clips) == 1:
         cvc = mp.CompositeVideoClip([background_clip, keyboard_clip.resize(0.69).set_pos(("center", 380)), txt_clips[0].set_pos((351, 282))]).set_duration(keyboard_clip.duration)
-        cvc = crop(cvc, x1=269.5, y1=199.5, width=1381, height=681)
-        return cvc
+        cvc = vfx.crop(cvc, x1=269.5, y1=199.5, width=1381, height=681)
+    return cvc
 
 def export_clip(clip, filename):
     ext = filename.split(".")[1]
@@ -78,7 +78,7 @@ def export_clip(clip, filename):
         clip.write_videofile(filename, fps=24)
 
 
-def create_video(temp_dir, filename, text, speed, layout, no_display=False):
+def create_video(temp_dir, filename, text, speed, layout, no_display=False, invert_colors=False):
 
     T = 1/speed
 
@@ -98,6 +98,9 @@ def create_video(temp_dir, filename, text, speed, layout, no_display=False):
         txt_clip = generate_text_clip(text, T, layout['fonts'][0])
         final_clip = generate_composite_clip(background_clip, keyboard_clip, [txt_clip])
 
+    if invert_colors:
+        final_clip = final_clip.fx(vfx.invert_colors)
+
     export_clip(final_clip, filename)
 
     temp_dir.cleanup()
@@ -109,6 +112,7 @@ parser.add_argument('--no-display', action='store_true')
 parser.add_argument('-t', '--text', required=True)
 parser.add_argument('-o', '--output', default='output.mp4')
 parser.add_argument('-s', '--speed', default=5, type=int)
+parser.add_argument('--invert-colors', action='store_true')
 
 args = parser.parse_args()
 args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
@@ -119,4 +123,4 @@ with open("layouts/{}.yml".format(args.layout)) as f:
 print("Generating frames ...")
 frames_dir = create_frames("assets/{}".format(layout['file']), args.text)
 print("Frames successfully generated.")
-create_video(frames_dir, args.output, args.text, args.speed, layout, args.no_display)
+create_video(frames_dir, args.output, args.text, args.speed, layout, args.no_display, args.invert_colors)
