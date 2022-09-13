@@ -1,10 +1,19 @@
+import argparse
+import yaml
 from bs4 import BeautifulSoup
 import re
-import os, shutil
+import tempfile
+import os
 from cairosvg import svg2png
 import moviepy.editor as mp
 from moviepy.video.tools.segmenting import findObjects
 from moviepy.video.fx.all import crop
+
+def layout_remap(word, mapping):
+    res = ""
+    for c in word:
+        res += (mapping[c])
+    return res
 
 def set_property(soup, object_id, prop, value):
     obj = soup.find(id=object_id)
@@ -23,29 +32,30 @@ def create_frames(keyboard_svg, text):
         data = f.read()
     keyboard_soup = BeautifulSoup(data, 'xml')
 
-    shutil.rmtree('temp')
-    os.makedirs('temp')
+    temp_dir = tempfile.TemporaryDirectory()
+    temp_dir_name = temp_dir.name
     
     frame_num = 0
-    svg2png(bytestring=str(keyboard_soup), write_to="temp/frame{}.png".format(frame_num))
+    svg2png(bytestring=str(keyboard_soup), write_to="{}/frame{}.png".format(temp_dir_name,frame_num))
     frame_num += 1
     for c in text:
         c = remap_special(c)
         set_property(keyboard_soup, c, 'fill', 'black')
         set_property(keyboard_soup, c, 'fill-opacity', '0.2')
-        svg2png(bytestring=str(keyboard_soup), write_to="temp/frame{}.png".format(frame_num))
+        svg2png(bytestring=str(keyboard_soup), write_to="{}/frame{}.png".format(temp_dir_name,frame_num))
         frame_num += 1
         set_property(keyboard_soup, c, 'fill', 'none')
         set_property(keyboard_soup, c, 'fill-opacity', '1')
-        svg2png(bytestring=str(keyboard_soup), write_to="temp/frame{}.png".format(frame_num))
+        svg2png(bytestring=str(keyboard_soup), write_to="{}/frame{}.png".format(temp_dir_name, frame_num))
         frame_num += 1
+    return temp_dir
 
-def create_video(filename, text1, text2):
+def create_video(temp_dir, filename, text1, text2):
     background_clip = mp.ImageClip("keyboard_video_background.png")
 
     T = 0.2
 
-    clips = [mp.ImageClip("temp/frame{}.png".format(n)).set_duration(T) for n in range(len(os.listdir("temp")))]
+    clips = [mp.ImageClip("{}/frame{}.png".format(temp_dir.name, n)).set_duration(T) for n in range(len(os.listdir(temp_dir.name)))]
     keyboard_clip = mp.concatenate_videoclips(clips)
 
     upperTxtClip = mp.concatenate_videoclips([mp.TextClip('> {}|'.format(text1[:i].upper()),color='black',
@@ -65,6 +75,25 @@ def create_video(filename, text1, text2):
     elif ext == 'mp4':
         cvc.write_videofile(filename, fps=24)
 
+    temp_dir.cleanup()
 
-create_frames("keyboard-jp.svg", "BYTE")
-create_video("test.mp4", "BYTE", "こんかい")
+
+
+parser = argparse.ArgumentParser(description="A customizable typing animation generator with multi-layout support.")
+parser.add_argument('-l', '--layout', default='enjp', help='the layout to use for the keyboard (default: enjp)')
+parser.add_argument('-d', '--display', default='dual', choices=['single', 'dual', 'none'])
+parser.add_argument('-t', '--text', required=True)
+parser.add_argument('-o', '--output', default='output.mp4')
+parser.add_argument('-s', '--speed', default=5, type=int)
+
+
+args = parser.parse_args()
+args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
+
+with open("layouts/{}.yml".format(args.layout)) as f:
+    layout = yaml.safe_load(f)
+
+print("Generating frames ...")
+frames_dir = create_frames(layout['file'], args.text)
+print("Frames successfully generated.")
+create_video(frames_dir, args.output, args.text, layout_remap(args.text, layout['mapping']))

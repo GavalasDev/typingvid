@@ -1,0 +1,33 @@
+file: keyboard-gr.svg
+
+fonts:
+  - Noto-Sans-Mono
+  - Noto-Sans-Mono
+
+mapping:
+  Q:  ;
+  W:  Σ
+  E:  Ε
+  R:  Ρ
+  T:  Τ
+  Y:  Υ
+  U:  Θ
+  I:  Ι
+  O:  Ο
+  P:  Π
+  A:  Α
+  S:  Σ
+  D:  Δ
+  F:  Φ
+  G:  Γ
+  H:  Η
+  J:  Ξ
+  K:  Κ
+  L:  Λ
+  Z:  Ζ
+  X:  Χ
+  C:  Ψ
+  V:  Ω
+  B:  Β
+  N:  Ν
+  M:  Μ
