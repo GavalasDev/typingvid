@@ -73,9 +73,9 @@ def generate_composite_clip(background_clip, keyboard_clip, txt_clips):
 def export_clip(clip, filename):
     ext = filename.split(".")[1]
     if ext == 'gif':
-        clip.write_gif(filename, fps=10)
+        clip.write_gif(filename, fps=10, logger=None)
     elif ext == 'mp4':
-        clip.write_videofile(filename, fps=24)
+        clip.write_videofile(filename, fps=24, logger=None)
 
 
 def create_video(temp_dir, filename, text, speed, layout, no_display=False, invert_colors=False):
@@ -120,7 +120,9 @@ args.text = args.text.upper() # TODO add support for case-sensitivity (animating
 with open("layouts/{}.yml".format(args.layout)) as f:
     layout = yaml.safe_load(f)
 
-print("Generating frames ...")
+print("Generating frames... ", end="", flush=True)
 frames_dir = create_frames("assets/{}".format(layout['file']), args.text)
-print("Frames successfully generated.")
+print("frames successfully generated.")
+print("Generating output file... ", end="", flush=True)
 create_video(frames_dir, args.output, args.text, args.speed, layout, args.no_display, args.invert_colors)
+print("output file {} successfully generated.".format(args.output))
