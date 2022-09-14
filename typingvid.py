@@ -194,6 +194,9 @@ def create_video(temp_dir, layout, args):
     if args.invert_colors:
         final_clip = final_clip.fx(vfx.invert_colors)
 
+    if args.hold_last_frame > 0:
+        final_clip = final_clip.fx(vfx.freeze, t='end', padding_end=1/100, freeze_duration=args.hold_last_frame)
+
     export_clip(final_clip, args.output)
 
     temp_dir.cleanup()
@@ -239,6 +242,13 @@ parser.add_argument(
     "--force-lowercase",
     action="store_true",
     help="show display text in lowercase (instead of uppercase)",
+)
+parser.add_argument(
+    "--hold-last-frame",
+    default=-1,
+    type=float,
+    metavar="N",
+    help="keep last frame on screen for N seconds, 0 for normal screen time (default: 0)",
 )
 
 args = parser.parse_args()
