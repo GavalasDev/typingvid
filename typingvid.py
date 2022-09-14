@@ -116,7 +116,6 @@ def generate_text_clip(text, T, font):
                 fontsize=31,
                 font=font,
             ).set_duration(2 * T)
-
             for i in range(0, len(text) + 1)
         ]
     )
@@ -204,17 +203,43 @@ parser = argparse.ArgumentParser(
     description="A customizable typing animation generator with multi-layout support."
 )
 parser.add_argument(
+    "-t",
+    "--text",
+    required=True,
+    help="the text (only in the first language) to be typed",
+)
+parser.add_argument(
     "-l",
     "--layout",
-    default="engr",
-    help="the layout to use for the keyboard (default: engr)",
+    default="en",
+    help="the layout to use for the keyboard (default: en)",
 )
-parser.add_argument("--no-display", action="store_true")
-parser.add_argument("-t", "--text", required=True)
-parser.add_argument("-o", "--output", default="output.mp4")
-parser.add_argument("-s", "--speed", default=5, type=int)
-parser.add_argument("--invert-colors", action="store_true")
-parser.add_argument("--force-lowercase", action="store_true")
+parser.add_argument(
+    "-o",
+    "--output",
+    default="output.mp4",
+    help="location of output file (default: output.mp4)",
+)
+parser.add_argument(
+    "-s",
+    "--speed",
+    default=5.0,
+    type=float,
+    help="speed of output media file (default: 5.0)",
+)
+parser.add_argument(
+    "--no-display",
+    action="store_true",
+    help="keep only the keyboard for final animation",
+)
+parser.add_argument(
+    "--invert-colors", action="store_true", help="invert colors of final media file"
+)
+parser.add_argument(
+    "--force-lowercase",
+    action="store_true",
+    help="show display text in lowercase (instead of uppercase)",
+)
 
 args = parser.parse_args()
 args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
