@@ -16,6 +16,22 @@ from cairosvg import svg2png
 
 
 def _layout_remap(word, mapping):
+    """
+    Remap each character of a word to another layout using a dictionary.
+
+    Parameters
+    ----------
+    word: string
+        The word to be remapped.
+    mapping: dict
+        The dictionary containing the mapping between the two layouts 
+        (e.g. {"A": "ち", "B": "こ", "C": "そ", ...}).
+    
+    Returns
+    -------
+    string
+        The resulting word after the remapping.
+    """
     res = ""
     for c in word:
         res += mapping[c]
@@ -23,13 +39,46 @@ def _layout_remap(word, mapping):
 
 
 def _set_property(soup, object_id, prop, value):
+    """
+    Update a property of an object within an svg file.
+
+    Parameters
+    ----------
+    soup: bs4.BeautifulSoup
+        A BeautifulSoup object containing the contents of the svg (modified in place)
+    object_id: string
+        The id of the svg object to update. Either a single character (e.g. 'A') or
+        a special string (e.g. "Space") based on convetion.
+    prop: string
+        The property to update (e.g. "fill" or "fill-opacity").
+    value: string
+        The target value of the given property (e.g. "black", "0.1").
+
+    Notes
+    -----
+    Parameter `soup` is modified in place.
+    """
     obj = soup.find(id=object_id)
     obj["style"] = re.sub(f"{prop}:.+?;", f"{prop}:{value};", obj["style"])
 
 
 def _remap_special(c):
+    """
+    Remap special characters to valid svg object ids based on convetion.
+
+    Parameters
+    ----------
+    c: string
+        The character to be remapped.
+
+    Returns
+    -------
+    string
+        A valid svg object id. Either the original character `c` or an expressive string
+        for special characters.
+    """
     m = {
-        " ": "Space",
+        " ": "Space", # TODO make lowercase
         "\n": "Enter",
         "`": "backtick",
         "-": "minus",
@@ -46,12 +95,31 @@ def _remap_special(c):
 
     if c in m:
         c = m[c]
-    else:
-        c = c
+
     return c
 
 
 def _generate_frame(char, soup, properties, temp_dir_name, frame_num):
+    """
+    Generate a single frame of the (keyboard-only) animation.
+
+    Parameters
+    ----------
+    char: string
+        The character currently being animated.
+    soup: bs4.BeautifulSoup
+        The BeautifulSoup containing the keyboard svg.
+    properties: dict
+        A dictionary of property/value pairs to be updated for this frame.
+    temp_dir_name: string
+        The directory in which the frames are temporary being stored.
+    frame_number: int
+        The number of the current frame.
+
+    Notes
+    -----
+    Writes directly to file '{temp_dir_name}/frame{frame_num}.png'
+    """
     for prop in properties:
         _set_property(soup, char, prop, properties[prop])
     svg2png(
@@ -61,6 +129,21 @@ def _generate_frame(char, soup, properties, temp_dir_name, frame_num):
 
 
 def _create_frames(keyboard_svg, text):
+    """
+    Generate all frames of keyboard animation and store them in a temporary folder.
+
+    Parameters
+    ----------
+    keyboard_svg: string
+        Path to a keyboard svg file.
+    text: string
+        The text to be animated onto the keyboard.
+
+    Returns
+    -------
+    temp_dir: tempfile.TemporaryDirectory
+        A reference to the (automatically generated) temporary directory containing all frames.
+    """
     with open(keyboard_svg) as f:
         data = f.read()
     keyboard_soup = BeautifulSoup(data, "xml")
@@ -101,6 +184,21 @@ def _create_frames(keyboard_svg, text):
 
 
 def _generate_keyboard_clip(temp_dir, T):
+    """
+    Combine previously generated keyboard frames to a single MoviePy clip.
+
+    Parameters
+    ----------
+    temp_dir: tempfile.TemporaryDirectory
+        A reference to the (automatically generated) temporary directory containing all frames.
+    T: float
+        The duration of each frame in seconds.
+
+    Returns
+    -------
+    moviepy.video.VideoClip.VideoClip
+        The resulting MoviePy clip.
+    """
     clips = [
         mp.ImageClip(f"{temp_dir.name}/frame{n}.png").set_duration(T)
         for n in range(len(os.listdir(temp_dir.name)))
@@ -110,6 +208,23 @@ def _generate_keyboard_clip(temp_dir, T):
 
 
 def _generate_text_clip(text, T, font):
+    """
+    Create a simple MoviePy clip of text slowly appearing to be used on the display(s).
+
+    Parameters
+    ----------
+    text: string
+        The string to be animated.
+    T: float
+        The duration of single keypress.
+    font: string
+        The font to be used for the text.
+
+    Returns
+    -------
+    moviepy.video.VideoClip.VideoClip
+        The resulting MoviePy clip.
+    """
     return mp.concatenate_videoclips(
         [
             mp.TextClip(
@@ -125,6 +240,23 @@ def _generate_text_clip(text, T, font):
 
 
 def _generate_composite_clip(background_clip, keyboard_clip, txt_clips):
+    """
+    Create the final clip containing the keyboard and either one or two displays.
+
+    Parameters
+    ----------
+    background_clip: moviepy.video.VideoClip.ImageClip
+        A simple image clip of the background to be used for the video.
+    keyboard_clip: moviepy.video.VideoClip.VideoClip
+        The animated keyboard clip generated by `_generate_keyboard_clip`.
+    txt_clips: list
+        A list containing either one or two text clips generated by `_generate_text_clip`
+
+    Returns
+    -------
+    moviepy.video.VideoClip.VideoClip
+        The resulting (composite) video clip.
+    """
     if len(txt_clips) == 2:
         cvc = mp.CompositeVideoClip(
             [
@@ -149,6 +281,16 @@ def _generate_composite_clip(background_clip, keyboard_clip, txt_clips):
 
 
 def _export_clip(clip, filename):
+    """
+    Export a clip to a media file based on its extension.
+
+    Parameters
+    ----------
+    clip: moviepy.video.VideoClip.VideoClip
+        The clip to be written.
+    filename: string
+        The path to the output file. Extension can be either `.mp4` or `.gif`.
+    """
     ext = filename.split(".")[1]
     if ext == "gif":
         clip.write_gif(filename, fps=10, logger=None)
@@ -156,7 +298,21 @@ def _export_clip(clip, filename):
         clip.write_videofile(filename, fps=24, logger=None)
 
 
-def create_video(temp_dir, layout, args):
+def _create_video(temp_dir, layout, args):
+    """
+    Create a fully-fledged keyboard animation video using the previously generated keyboard frames.
+    
+    Parameters
+    ----------
+    temp_dir: tempfile.TemporaryDirectory
+        A reference to the (automatically generated) temporary directory containing all frames.
+    layout: dict
+        A dictionary resulting from reading an appropriate yaml layout file.
+        Should at least include the `file` and `fonts` keys.
+    args: argparse.Namespace
+        The arguments generated by argparse.
+        Required: args.text
+    """
 
     T = 1 / args.speed
 
@@ -192,19 +348,36 @@ def create_video(temp_dir, layout, args):
             T,
             layout["fonts"][0],
         )
-        final_clip = _generate_composite_clip(background_clip, keyboard_clip, [txt_clip])
+        final_clip = _generate_composite_clip(
+            background_clip, keyboard_clip, [txt_clip]
+        )
 
     if args.invert_colors:
         final_clip = final_clip.fx(vfx.invert_colors)
 
     if args.hold_last_frame > 0:
-        final_clip = final_clip.fx(vfx.freeze, t='end', padding_end=1/100, freeze_duration=args.hold_last_frame)
+        final_clip = final_clip.fx(
+            vfx.freeze,
+            t="end",
+            padding_end=1 / 100,
+            freeze_duration=args.hold_last_frame,
+        )
 
     _export_clip(final_clip, args.output)
 
     temp_dir.cleanup()
 
-if __name__ == '__main__':
+
+def _parse_arguments():
+    """
+    Parses the arguments from the command line using argparse.
+
+    Returns
+    -------
+    args: argparse.Namespace
+        The arguments generated by argparse.
+        Required: args.text
+    """
     parser = argparse.ArgumentParser(
         description="A customizable typing animation generator with multi-layout support."
     )
@@ -257,12 +430,36 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
 
-    with open(f"layouts/{args.layout}.yml") as f:
-        layout = yaml.safe_load(f)
+    return args
 
+
+def animate(layout, args):
+    """
+    Create a keyboard animation video based on the provided arguments.
+
+    Parameters
+    ----------
+    layout: dict
+        A dictionary resulting from reading an appropriate yaml layout file.
+        Should at least include the `file` and `fonts` keys.
+    args: argparse.Namespace
+        The arguments generated by argparse.
+        Required: args.text
+    """
     print("Generating frames... ", end="", flush=True)
     frames_dir = _create_frames(f"assets/{layout['file']}", args.text)
     print("frames successfully generated.")
     print("Generating output file... ", end="", flush=True)
-    create_video(frames_dir, layout, args)
+    _create_video(frames_dir, layout, args)
     print(f"output file {args.output} successfully generated.")
+
+
+if __name__ == "__main__":
+
+    args = _parse_arguments()
+
+    with open(f"layouts/{args.layout}.yml") as f:
+        layout = yaml.safe_load(f)
+
+    animate(layout, args)
+
