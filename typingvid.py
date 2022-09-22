@@ -78,8 +78,8 @@ def _remap_special(c):
         for special characters.
     """
     m = {
-        " ": "Space", # TODO make lowercase
-        "\n": "Enter",
+        " ": "space", # TODO make lowercase
+        "\n": "enter",
         "`": "backtick",
         "-": "minus",
         "=": "equals",
