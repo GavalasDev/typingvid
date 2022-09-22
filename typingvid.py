@@ -34,7 +34,8 @@ def _layout_remap(word, mapping):
     """
     res = ""
     for c in word:
-        res += mapping[c]
+        c = _remap_special(c)
+        res += mapping[str(c)]
     return res
 
 
