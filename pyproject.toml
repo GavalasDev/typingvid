@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "typingvid"
+version = "0.1.0"
+description = "An open-source, simple but extensible typing animation generator."
+authors = ["Konstantinos Gavalas <contact@gavalas.dev>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+moviepy = "^1.0.3"
+PyYAML = "^6.0"
+bs4 = "^0.0.1"
+CairoSVG = "^2.5.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
