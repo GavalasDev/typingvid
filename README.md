@@ -1,5 +1,7 @@
 # Typingvid
 
+![PyPI](https://img.shields.io/pypi/v/typingvid) ![PyPI - Status](https://img.shields.io/pypi/status/typingvid) ![PyPI - Downloads](https://img.shields.io/pypi/dm/typingvid) ![PyPI - License](https://img.shields.io/pypi/l/typingvid)
+
 Typingvid is a command line utility that allows users to quickly generate typing animation videos using different keyboard layouts and themes. To read more about the inner workings of the tool visit https://www.gavalas.dev/projects/typingvid.
 
 ## Installation
