@@ -455,12 +455,15 @@ def animate(layout, args):
     print(f"output file {args.output} successfully generated.")
 
 
-if __name__ == "__main__":
-
+def main():
     args = _parse_arguments()
 
     with open(f"layouts/{args.layout}.yml") as f:
         layout = yaml.safe_load(f)
 
     animate(layout, args)
+
+
+if __name__ == "__main__":
+    main()
 

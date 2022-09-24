@@ -17,3 +17,6 @@ CairoSVG = "^2.5.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+typingvid = 'typingvid:main'
