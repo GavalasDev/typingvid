@@ -5,6 +5,7 @@ description = "An open-source, simple but extensible typing animation generator.
 authors = ["Konstantinos Gavalas <contact@gavalas.dev>"]
 license = "MIT"
 readme = "README.md"
+include = ["layouts/*", "assets/*"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
