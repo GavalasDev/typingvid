@@ -6,6 +6,9 @@ authors = ["Konstantinos Gavalas <contact@gavalas.dev>"]
 license = "MIT"
 readme = "README.md"
 include = ["layouts/*", "assets/*"]
+homepage = "https://www.gavalas.dev/projects/typingvid"
+repository = "https://github.com/GavalasDev/typingvid"
+keywords = ["keyboard", "animation", "command-line utility"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
