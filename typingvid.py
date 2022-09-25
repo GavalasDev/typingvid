@@ -97,19 +97,8 @@ def _remap_special(c):
         for special characters.
     """
     m = {
-        " ": "space", # TODO make lowercase
+        " ": "space",
         "\n": "enter",
-        "`": "backtick",
-        "-": "minus",
-        "=": "equals",
-        "[": "open_square",
-        "]": "closed_square",
-        "\\": "backslash",
-        ";": "semicolon",
-        "'": "tick",
-        ",": "comma",
-        ".": "period",
-        "/": "forwardslash",
     }
 
     if c in m:
