@@ -39,6 +39,24 @@ def _layout_remap(word, mapping):
     return res
 
 
+def _get_relative_dir(relative_dir):
+    """
+    Return the full path of a relative directory.
+
+    Parameters
+    ----------
+    relative_dir: string
+        The relative directory name.
+
+    Returns
+    -------
+    string
+        The full path of the directory.
+    """
+    main_dir_name = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(main_dir_name, relative_dir)
+
+
 def _set_property(soup, object_id, prop, value):
     """
     Update a property of an object within an svg file.
@@ -323,7 +341,7 @@ def _create_video(temp_dir, layout, args):
         final_clip = keyboard_clip
 
     elif len(layout["fonts"]) == 2:
-        background_clip = mp.ImageClip("assets/dual_display_background.png")
+        background_clip = mp.ImageClip(f"{_get_relative_dir('assets')}/dual_display_background.png")
         upper_text_clip = _generate_text_clip(
             args.text if not args.force_lowercase else args.text.lower(),
             T,
@@ -343,7 +361,7 @@ def _create_video(temp_dir, layout, args):
         )
 
     elif len(layout["fonts"]) == 1:
-        background_clip = mp.ImageClip("assets/mono_display_background.png")
+        background_clip = mp.ImageClip(f"{_get_relative_dir('assets')}/mono_display_background.png")
         txt_clip = _generate_text_clip(
             args.text if not args.force_lowercase else args.text.lower(),
             T,
@@ -368,6 +386,14 @@ def _create_video(temp_dir, layout, args):
 
     temp_dir.cleanup()
 
+def _show_all_layouts():
+    layouts = []
+    for f in os.listdir(_get_relative_dir("layouts/")):
+        if f.endswith(".yml") or f.endswith(".yaml"):
+            layouts.append(f)
+    print("Available layouts: ", end="")
+    print(", ".join([l.split(".")[0] for l in layouts]))
+
 
 def _parse_arguments():
     """
@@ -382,10 +408,10 @@ def _parse_arguments():
     parser = argparse.ArgumentParser(
         description="A customizable typing animation generator with multi-layout support."
     )
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "-t",
         "--text",
-        required=True,
         help="the text (only in the first language) to be typed",
     )
     parser.add_argument(
@@ -406,6 +432,11 @@ def _parse_arguments():
         default=5.0,
         type=float,
         help="speed of output media file (default: 5.0)",
+    )
+    group.add_argument(
+        "--all-layouts",
+        action="store_true",
+        help="print all available layouts and exit",
     )
     parser.add_argument(
         "--no-display",
@@ -429,7 +460,8 @@ def _parse_arguments():
     )
 
     args = parser.parse_args()
-    args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
+    if args.text:
+        args.text = args.text.upper() # TODO add support for case-sensitivity (animating the Shift key)
 
     return args
 
@@ -448,7 +480,8 @@ def animate(layout, args):
         Required: args.text
     """
     print("Generating frames... ", end="", flush=True)
-    frames_dir = _create_frames(f"assets/{layout['file']}", args.text)
+    asset = os.path.join(_get_relative_dir("assets/"), layout['file'])
+    frames_dir = _create_frames(asset, args.text)
     print("frames successfully generated.")
     print("Generating output file... ", end="", flush=True)
     _create_video(frames_dir, layout, args)
@@ -458,7 +491,13 @@ def animate(layout, args):
 def main():
     args = _parse_arguments()
 
-    with open(f"layouts/{args.layout}.yml") as f:
+    if args.all_layouts:
+        _show_all_layouts()
+        quit()
+
+    layouts_dir = _get_relative_dir("layouts/")
+    layout_file = os.path.join(layouts_dir, args.layout) + ".yml"
+    with open(layout_file) as f:
         layout = yaml.safe_load(f)
 
     animate(layout, args)
