@@ -5,13 +5,13 @@ fonts:
   - Noto-Sans-Mono-CJK-JP
 
 mapping:
-  'backtick':  ろ
-  'minus':  ほ
-  'equals':  へ
-  'backslash':  む
-  'comma':  ね
-  'period':  る
-  'forwardslash': め
+  '`':  ろ
+  '-':  ほ
+  '=':  へ
+  '\':  む
+  ',':  ね
+  '.':  る
+  '/': め
   '1':  ぬ
   '2':  ふ
   '3':  あ

@@ -220,7 +220,7 @@
          x="663.89954"
          y="167.34607">P</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="open_square"
+       id="["
        width="28.692539"
        height="28.789494"
        x="695.48517"
@@ -245,7 +245,7 @@
          y="178.03897"
          id="tspan834">[</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="close_square"
+       id="]"
        width="28.692539"
        height="28.789494"
        x="729.94788"
@@ -272,7 +272,7 @@
          y="178.03897"
          id="tspan852">[</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="backslash"
+       id="\"
        width="28.692539"
        height="28.789494"
        x="765.32269"
@@ -427,7 +427,7 @@
          x="638.12598"
          y="201.39037">L</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="tick"
+       id="'"
        width="28.692539"
        height="28.789494"
        x="704.67822"
@@ -452,7 +452,7 @@
          y="212.60504"
          id="tspan979">'</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="semicolon"
+       id=";"
        width="28.692539"
        height="28.789494"
        x="668.742"
@@ -589,7 +589,7 @@
          x="585.15002"
          y="235.61304">M</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="forwardslash"
+       id="/"
        width="28.692539"
        height="28.789494"
        x="685.92413"
@@ -614,14 +614,14 @@
          y="246.31465"
          id="tspan1227">/</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="period"
+       id="."
        width="28.692539"
        height="28.789494"
        x="651.25006"
        y="222.8972"
        ry="5.8688641" /><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="comma"
+       id=","
        width="28.692539"
        height="28.789494"
        x="616.2384"
@@ -749,7 +749,7 @@
          y="177.95235"
          id="tspan1410">Tab</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="backtick"
+       id="`"
        width="28.692539"
        height="28.789494"
        x="291.38876"
@@ -1024,7 +1024,7 @@
          y="144.87854"
          id="tspan2127">0</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="minus"
+       id="-"
        width="28.692539"
        height="28.789494"
        x="677.37158"
@@ -1049,7 +1049,7 @@
          y="141.94398"
          id="tspan2137">-</tspan></text><rect
        style="fill:none;fill-opacity:0.988235;stroke:#000000;stroke-width:0.635;stroke-miterlimit:3"
-       id="equals"
+       id="="
        width="28.692539"
        height="28.789494"
        x="712.86859"
