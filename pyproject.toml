@@ -9,6 +9,16 @@ include = ["layouts/*", "assets/*"]
 homepage = "https://www.gavalas.dev/projects/typingvid"
 repository = "https://github.com/GavalasDev/typingvid"
 keywords = ["keyboard", "animation", "command-line utility"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Natural Language :: Greek",
+    "Natural Language :: Japanese",
+    "Topic :: Utilities",
+    "Topic :: Multimedia :: Video",
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
