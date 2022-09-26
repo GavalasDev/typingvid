@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "typingvid"
-version = "0.1.0"
+version = "0.1.1"
 description = "An open-source, simple but extensible typing animation generator."
 authors = ["Konstantinos Gavalas <contact@gavalas.dev>"]
 license = "MIT"
